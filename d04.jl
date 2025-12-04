@@ -7,6 +7,7 @@ neighbours = [CartesianIndex(x, y) for x in -1:1, y in -1:1 if x != 0 || y != 0]
 is_accessible(grid::Matrix{Bool}, idx::CartesianIndex) =
     grid[idx] && sum(grid[idx+delta] for delta in neighbours if checkbounds(Bool, grid, idx + delta)) < 4
 
+# placing grid into a single element tuple "protects" it from broadcast
 p1(grid::Matrix{Bool}) = sum(is_accessible.((grid,), findall(grid)))
 
 function p2(grid::Matrix{Bool})
@@ -14,7 +15,6 @@ function p2(grid::Matrix{Bool})
     all_indices = findall(grid)
 
     while true
-        # placing grid into a single element tuple "protects" it from broadcast
         to_remove = all_indices[is_accessible.((grid,), all_indices)]
         if isempty(to_remove)
             return removed
