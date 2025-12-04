@@ -35,13 +35,10 @@ function p2(moves::Vector{Int})::Int
     for move in moves
         new_pos = rotate(pos, move)
 
-        # if we are at zero or we ended up being in the same position or lower / higher position when moving to the right / left,
-        # we know that we crossed zero on the way
         if new_pos == 0 || (move > 0 && new_pos <= pos && pos != 0) || (move < 0 && new_pos >= pos && pos != 0)
             cnt += 1
         end
 
-        # if the move is larger than one rotation, account for the remaining rotations
         cnt += fld(abs(move), 100)
 
         pos = new_pos
