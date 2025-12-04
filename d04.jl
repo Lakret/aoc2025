@@ -1,30 +1,27 @@
 using Pipe
 
-parse_input(input) = @pipe input |> chomp |> split .|> collect .|> map(ch -> ch == '.' ? 0 : 1, _) |> mapreduce(permutedims, vcat, _)
+parse_input(input)::Matrix{Bool} = @pipe input |> chomp |> split .|> collect .|> map(ch -> ch == '.' ? false : true, _) |> mapreduce(permutedims, vcat, _)
 
-neighbours = [(x, y) for x in -1:1, y in -1:1 if x != 0 || y != 0]
+neighbours = [CartesianIndex(x, y) for x in -1:1, y in -1:1 if x != 0 || y != 0]
 
-is_accessible(grid::Matrix{Int}, x::Int, y::Int) = sum(
-    grid[x+dx, y+dy]
-    for (dx, dy) in neighbours
-    if x + dx >= 1 && x + dx <= size(grid, 1) && y + dy >= 1 && y + dy <= size(grid, 2)
-) < 4
+is_accessible(grid::Matrix{Bool}, idx::CartesianIndex) =
+    grid[idx] && sum([grid[idx+delta] ? 1 : 0 for delta in neighbours if checkbounds(Bool, grid, idx + delta)]) < 4
 
-p1(grid::Matrix{Int}) = sum(grid[x, y] == 1 && is_accessible(grid, x, y) for x in 1:size(grid, 1), y in 1:size(grid, 2))
+p1(grid::Matrix{Bool}) = sum(is_accessible(grid, idx) for idx in CartesianIndices(grid))
 
-function p2(grid::Matrix{Int})
+function p2(grid::Matrix{Bool})
     grid, removed = deepcopy(grid), 0
+    all_indices = findall(grid)
 
     while true
-        to_remove = [(x, y) for x in 1:size(grid, 1), y in 1:size(grid, 2) if grid[x, y] == 1 && is_accessible(grid, x, y)]
+        # placing grid into a single element tuple "protects" it from broadcast
+        to_remove = all_indices[is_accessible.((grid,), all_indices)]
         if isempty(to_remove)
             return removed
         end
 
         removed += length(to_remove)
-        for (x, y) in to_remove
-            grid[x, y] = 0
-        end
+        grid[CartesianIndex.(to_remove)] .= 0
     end
 end
 
