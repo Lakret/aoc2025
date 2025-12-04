@@ -1,6 +1,6 @@
 using Pipe
 
-parse_input(input) = @pipe input |> chomp |> split .|> collect .|> parse.(Int, _) # |> mapreduce(permutedims, vcat, _)
+parse_input(input) = @pipe input |> chomp |> split .|> collect .|> parse.(Int, _)
 
 
 function max_joltage(bank::Vector{Int}, max_batteries::Int=2)::Int
