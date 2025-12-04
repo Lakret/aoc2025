@@ -5,7 +5,6 @@ function parse_input(input)
     end
 end
 
-
 rotate(pos::Int, move::Int) = mod(pos + move, 100)
 
 function p1(moves::Vector{Int})::Int
@@ -42,6 +41,7 @@ function p2(moves::Vector{Int})::Int
 
     cnt
 end
+
 
 input = readlines("inputs/d01.txt") |> parse_input
 test_input = """
