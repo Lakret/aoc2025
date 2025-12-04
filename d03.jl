@@ -1,3 +1,17 @@
+"""
+This is a simple greedy algorithm.
+
+We know that a leading digit being larger will make the number larger than any number with a smaller leading digit,
+thus we can greedily select the largest digit for each position going from left to right.
+
+We also know that we will need to build a number of given length. Thus, we can progressively restrict the range 
+of available digits by keeping track of the leftmost index of the available digits and keeping at least n digits 
+in the end not selectable since we'll need them to build the remanining part of the number.
+
+Otherwise, we just use argmax to find the largest available digit, and progressively build the result by 
+multiplying the selected digit by the appropriate power of 10 and shifting the left bound to the right of the selected digit.
+"""
+
 using Pipe
 
 parse_input(input) = @pipe input |> chomp |> split .|> collect .|> parse.(Int, _)

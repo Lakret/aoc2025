@@ -1,3 +1,11 @@
+"""
+For part 1, we just use built-in `mod` function that implements the desired behavior using modular arithmetic.
+
+For part 2, we additionally check if we arrived at zero or crossed zero on the way (our position is not zero, but while moving 
+to the right we ended up being to the left or on the same spot or in reverse for the moves to the left).
+If the move is larger than one full rotation, we account for additional rotations using integer division.
+"""
+
 function parse_input(input)
     map(input) do line
         v = parse(Int, line[2:end])

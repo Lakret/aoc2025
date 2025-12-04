@@ -1,3 +1,10 @@
+"""
+The solution is trivial if we directly use strings.
+I decided to optimize it a bit, by trying to work in numbers domain as much as possible.
+Thus, we are using log10 to get the length of the number,
+and integer division by an appropriate power of 10 to get the pattern of a given possible length.
+"""
+
 from math import log10, ceil
 
 
@@ -9,8 +16,14 @@ def parse_input(input: str) -> list[range]:
 
 def is_repetition(n: int, num_length: int, pattern_length: int) -> bool:
     power = num_length - pattern_length
-    pattern = str(int(n // 10**power))
-    return int(pattern * int(num_length // pattern_length)) == n
+    pattern = int(n // 10**power)
+    repetitions = int(num_length // pattern_length)
+
+    repeated = 0
+    for _ in range(repetitions):
+        repeated = repeated * (10**pattern_length) + pattern
+
+    return repeated == n
 
 
 def is_invalid_p1(n: int) -> bool:
