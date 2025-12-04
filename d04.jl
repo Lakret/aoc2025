@@ -5,7 +5,7 @@ parse_input(input)::Matrix{Bool} = @pipe input |> chomp |> split .|> collect .|>
 neighbours = [CartesianIndex(x, y) for x in -1:1, y in -1:1 if x != 0 || y != 0]
 
 is_accessible(grid::Matrix{Bool}, idx::CartesianIndex) =
-    grid[idx] && sum([grid[idx+delta] ? 1 : 0 for delta in neighbours if checkbounds(Bool, grid, idx + delta)]) < 4
+    grid[idx] && sum([grid[idx+delta] for delta in neighbours if checkbounds(Bool, grid, idx + delta)]) < 4
 
 p1(grid::Matrix{Bool}) = sum(is_accessible.((grid,), findall(grid)))
 
