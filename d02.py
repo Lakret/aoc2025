@@ -1,8 +1,10 @@
 from math import log10, ceil
 
 
-def parse_input(input: str) -> list[tuple[int, int]]:
-    return [(int(bounds[0]), int(bounds[1])) for bounds in [rng.split("-") for rng in input.strip().split(",")]]
+def parse_input(input: str) -> list[range]:
+    return [
+        range(int(bounds[0]), (int(bounds[1]) + 1)) for bounds in [rng.split("-") for rng in input.strip().split(",")]
+    ]
 
 
 def is_repetition(n: int, num_length: int, pattern_length: int) -> bool:
@@ -36,12 +38,12 @@ def is_invalid_p2(n: int) -> bool:
     return False
 
 
-def p1(input: list[tuple[int, int]]) -> int:
-    return sum([n for l, u in input for n in range(l, u + 1) if is_invalid_p1(n)])
+def p1(input: list[range]) -> int:
+    return sum([n for rng in input for n in rng if is_invalid_p1(n)])
 
 
-def p2(input: list[tuple[int, int]]) -> int:
-    return sum([n for l, u in input for n in range(l, u + 1) if is_invalid_p2(n)])
+def p2(input: list[range]) -> int:
+    return sum([n for rng in input for n in rng if is_invalid_p2(n)])
 
 
 if __name__ == "__main__":
