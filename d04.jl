@@ -1,16 +1,16 @@
 using Pipe
 
-parse_input(input)::Matrix{Bool} = @pipe input |> chomp |> split .|> collect .|> map(ch -> ch == '.' ? false : true, _) |> mapreduce(permutedims, vcat, _)
+parse_input(input)::BitMatrix = @pipe input |> chomp |> split .|> collect .|> map(ch -> ch == '.' ? false : true, _) |> mapreduce(permutedims, vcat, _) |> BitMatrix
 
 neighbours = [CartesianIndex(x, y) for x in -1:1, y in -1:1 if x != 0 || y != 0]
 
-is_accessible(grid::Matrix{Bool}, idx::CartesianIndex) =
+is_accessible(grid::BitMatrix, idx::CartesianIndex) =
     grid[idx] && sum(grid[idx+delta] for delta in neighbours if checkbounds(Bool, grid, idx + delta)) < 4
 
 # placing grid into a single element tuple "protects" it from broadcast
-p1(grid::Matrix{Bool}) = sum(is_accessible.((grid,), findall(grid)))
+p1(grid::BitMatrix) = sum(is_accessible.((grid,), findall(grid)))
 
-function p2(grid::Matrix{Bool})
+function p2(grid::BitMatrix)
     grid, removed = deepcopy(grid), 0
     all_indices = findall(grid)
 
