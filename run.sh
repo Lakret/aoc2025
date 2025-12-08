@@ -10,12 +10,14 @@ day=$1
 
 start_time=$(date +%s.%N 2>/dev/null || date +%s)
 
-if [ -f "${day}.py" ]; then
+if [ -f "${day}/Cargo.toml" ]; then
+    (cd "${day}" && cargo run --release)
+elif [ -f "${day}.py" ]; then
     python "${day}.py"
 elif [ -f "${day}.jl" ]; then
     julia "${day}.jl"
 else
-    echo "Error: File ${day}.py or ${day}.jl not found" >&2
+    echo "Error: File ${day}.py, ${day}.jl, or directory ${day}/ with Cargo.toml not found" >&2
     exit 1
 fi
 
