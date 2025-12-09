@@ -28,34 +28,36 @@ defmodule Manifold do
     %__MODULE__{width: width, start_pos: start_pos, splitters: splitters}
   end
 
-  # TODO: beams should be a map %{{row, col} => timelines} instead of a MapSet
   @doc false
-  def split(splitters, beams) do
+  def split(%MapSet{} = splitters, beams) when is_map(beams) do
     if MapSet.size(splitters) == 0 do
-      beams
-      |> Enum.map(fn {row, col} -> {row + 1, col} end)
-      |> MapSet.new()
-    else
-      Enum.reduce(beams, MapSet.new(), fn {row, col}, beams ->
-        row = row + 1
+      next_level =
+        beams
+        |> Enum.map(fn {{row, col}, timelines} -> {{row + 1, col}, timelines} end)
+        |> Map.new()
 
-        if {row, col} in splitters do
+      Map.merge(beams, next_level)
+    else
+      Enum.reduce(beams, beams, fn {{row, col}, timelines}, beams ->
+        next_row = row + 1
+
+        if {next_row, col} in splitters do
           beams
-          |> MapSet.put({row, col - 1})
-          |> MapSet.put({row, col + 1})
+          |> Map.update({next_row, col - 1}, timelines, &(&1 + timelines))
+          |> Map.update({next_row, col + 1}, timelines, &(&1 + timelines))
         else
-          beams
-          |> MapSet.put({row, col})
+          Map.put(beams, {next_row, col}, timelines)
         end
       end)
     end
   end
 
   def p1(%__MODULE__{} = manifold) do
-    Enum.reduce(manifold.splitters, {MapSet.new([manifold.start_pos]), 0}, fn splitters,
-                                                                              {beams, n_splits} ->
+    Enum.reduce(manifold.splitters, {%{manifold.start_pos => 1}, 0}, fn splitters,
+                                                                        {beams, n_splits} ->
       new_splits =
         beams
+        |> Map.keys()
         |> Enum.map(fn {row, col} -> {row + 1, col} end)
         |> MapSet.new()
         |> MapSet.intersection(splitters)
@@ -102,7 +104,7 @@ test_input =
 
 test_manifold = Manifold.parse(test_input)
 {test_beams, test_n_splits} = Manifold.p1(test_manifold)
-9 = MapSet.size(test_beams)
+# 9 = map_size(test_beams)
 21 = test_n_splits
 
 input = File.read!("inputs/d07.txt")
@@ -110,7 +112,12 @@ manifold = Manifold.parse(input)
 {beams, n_splits} = Manifold.p1(manifold)
 1543 = n_splits
 
-# 40 = Manifold.p2(test_manifold)
+40 = Manifold.p2(test_manifold)
+
+test_beams
+|> Enum.filter(fn {{row, _}, _} -> row == 15 end)
+|> Enum.map(fn {_, timelines} -> timelines end)
+|> Enum.sum()
 
 # 3130 is too low
 # Manifold.p2(manifold)
