@@ -15,7 +15,6 @@ struct Problem
     op::Function
 end
 
-
 function parse_input(input)
     lines = @pipe input |> strip |> split(_, '\n') |> strip.(_)
     nums = @pipe lines[1:end-1] .|> split .|> parse.(BigInt, _) |> reduce(hcat, _)
