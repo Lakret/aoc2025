@@ -16,8 +16,10 @@ elif [ -f "${day}.py" ]; then
     python "${day}.py"
 elif [ -f "${day}.jl" ]; then
     julia "${day}.jl"
+elif [ -f "${day}.exs" ]; then
+    elixir "${day}.exs"
 else
-    echo "Error: File ${day}.py, ${day}.jl, or directory ${day}/ with Cargo.toml not found" >&2
+    echo "Error: File ${day}.py, ${day}.jl, ${day}.exs, or directory ${day}/ with Cargo.toml not found" >&2
     exit 1
 fi
 

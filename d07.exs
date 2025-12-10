@@ -29,16 +29,18 @@ defmodule Manifold do
   end
 
   @doc false
-  def split(%MapSet{} = splitters, beams) when is_map(beams) do
+  def split(%MapSet{} = splitters, row_idx, beams) when is_map(beams) do
     if MapSet.size(splitters) == 0 do
       next_level =
         beams
+        |> Enum.filter(fn {{row, _}, _} -> row == row_idx end)
         |> Enum.map(fn {{row, col}, timelines} -> {{row + 1, col}, timelines} end)
         |> Map.new()
 
       Map.merge(beams, next_level)
     else
-      Enum.reduce(beams, beams, fn {{row, col}, timelines}, beams ->
+      current_beams = beams |> Enum.filter(fn {{row, _}, _} -> row == row_idx end)
+      Enum.reduce(current_beams, beams, fn {{row, col}, timelines}, beams ->
         next_row = row + 1
 
         if {next_row, col} in splitters do
@@ -46,15 +48,16 @@ defmodule Manifold do
           |> Map.update({next_row, col - 1}, timelines, &(&1 + timelines))
           |> Map.update({next_row, col + 1}, timelines, &(&1 + timelines))
         else
-          Map.put(beams, {next_row, col}, timelines)
+          Map.update(beams, {next_row, col}, timelines, &(&1 + timelines))
         end
       end)
     end
   end
 
   def p1(%__MODULE__{} = manifold) do
-    Enum.reduce(manifold.splitters, {%{manifold.start_pos => 1}, 0}, fn splitters,
-                                                                        {beams, n_splits} ->
+    manifold.splitters
+    |> Enum.with_index()
+    |> Enum.reduce({%{manifold.start_pos => 1}, 0}, fn {splitters, row_idx}, {beams, n_splits} ->
       new_splits =
         beams
         |> Map.keys()
@@ -63,24 +66,25 @@ defmodule Manifold do
         |> MapSet.intersection(splitters)
         |> MapSet.size()
 
-      beams = split(splitters, beams)
+      beams = split(splitters, row_idx, beams)
       {beams, n_splits + new_splits}
     end)
   end
 
-  #   def p2(%__MODULE__{} = manifold) do
-  #     {_, timelines} =
-  #       Enum.reduce(
-  #         manifold.splitters,
-  #         {MapSet.new([manifold.start_pos]), %{manifold.start_pos => 1}},
-  #         fn splitters, {beams, timelines} ->
-  #           split(splitters, beams, timelines)
-  #         end
-  #       )
+    def p2(%__MODULE__{} = manifold) do
 
-  #     timelines
-  #   end
+            manifold.splitters
+            |> Enum.with_index()
+            |> Enum.reduce(%{manifold.start_pos => 1}, fn {splitters, row_idx}, beams->
+                split(splitters, row_idx, beams)
+            end)
+|> Enum.filter(fn {{row, _}, _} -> row == length(manifold.splitters) end)
+        |> Enum.map(fn {_, timelines} -> timelines end)
+        |> Enum.sum()
+    end
 end
+
+import ExUnit.Assertions
 
 test_input =
   """
@@ -103,21 +107,13 @@ test_input =
   """
 
 test_manifold = Manifold.parse(test_input)
-{test_beams, test_n_splits} = Manifold.p1(test_manifold)
-# 9 = map_size(test_beams)
-21 = test_n_splits
-
 input = File.read!("inputs/d07.txt")
 manifold = Manifold.parse(input)
-{beams, n_splits} = Manifold.p1(manifold)
-1543 = n_splits
 
-40 = Manifold.p2(test_manifold)
+{_test_beams, test_n_splits} = Manifold.p1(test_manifold)
+assert test_n_splits == 21
+{_beams, n_splits} = Manifold.p1(manifold)
+assert n_splits |> IO.inspect(label: :p1) == 1543
 
-test_beams
-|> Enum.filter(fn {{row, _}, _} -> row == 15 end)
-|> Enum.map(fn {_, timelines} -> timelines end)
-|> Enum.sum()
-
-# 3130 is too low
-# Manifold.p2(manifold)
+assert Manifold.p2(test_manifold) == 40
+assert Manifold.p2(manifold) |> IO.inspect(label: :p2) == 3223365367809
