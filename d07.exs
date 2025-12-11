@@ -1,4 +1,13 @@
 defmodule Manifold do
+  @moduledoc """
+  Part one is simple: we just need to count the number of splits we encounter.
+  We do it by set intersection of beams moved to the next row with the splitters at that row.
+
+  Part two is solved by dynamic programming: when we propagate the beams, we keep track
+  of the number of "timelines" associated with each beam. For each new {row, col} position,
+  we sum timelines coming from all the beams hitting it. The end result is the sum of all
+  timelines in the last row.
+  """
   defstruct [:width, :start_pos, :splitters]
 
   def parse(input) do

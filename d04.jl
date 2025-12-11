@@ -1,3 +1,13 @@
+"""
+As is often the case with "game of life" like tasks, Julia's CartesianIndex is the goat.
+Since we are working with truthiness, we can also use BitMatrix.
+
+And then, `checkbounds` and comprehensions are used for implementing `is_accessible` check,
+while `findall` (returns all CartesianIndices of true elements), 
+[logical indexing](https://docs.julialang.org/en/v1/manual/arrays/#Logical-indexing),
+[broadcast assign](https://docs.julialang.org/en/v1/manual/mathematical-operations/#man-dot-operators)
+make part 2 a breeze.
+"""
 using Pipe
 
 parse_input(input)::BitMatrix = @pipe input |> chomp |> split .|> collect .|> map(ch -> ch == '.' ? false : true, _) |> mapreduce(permutedims, vcat, _) |> BitMatrix

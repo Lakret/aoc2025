@@ -1,3 +1,10 @@
+///! The core of the solution is using the built-in `std::ops::RangeInclusive` struct.
+///! Part 1 is trivial, for part 2 we need to adjust ranges depending on their overlap
+///! with other ranges. To simplify this, we replace Vec<RangeInclusive<_>> with Vec<Option<RangeInclusive<_>>>,
+///! and then in case a range is fully contained in another range, we replace it with None;
+///! in case another range contains the start of the current range, we adjust the start of the current range to be
+///! after the end of that other range; and in case the end of the current range is contained in another range,
+///! we adjust the end of the current range to be before the start of that other range.
 use std::fs::File;
 use std::io;
 use std::ops::RangeInclusive;

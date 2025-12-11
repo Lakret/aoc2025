@@ -1,3 +1,11 @@
+"""
+Here the problem is inverted: instead of different solutions, we just need to implement different
+parsing for parts 1 and 2.
+
+Thanks to Julia's array operations, parsing for part 2 is rather simple, we just build a matrix and iterate
+it column by column from right to left (`eachcol |> reverse`), before collecting it into the arrays.
+"""
+
 using Pipe
 
 function parse_op(op::AbstractString)::Function
