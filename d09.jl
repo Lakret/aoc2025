@@ -29,6 +29,8 @@ function edge_by_edge(corners::Vector{Vector{Int}})
 end
 
 struct Polygon
+  corners::Vector{Vector{Int}}
+
   # for point-in-polygon tests
   vertical_edges_asc_y_min::Vector{@NamedTuple{x::Int, y_min::Int, y_max::Int}}
 
@@ -61,7 +63,7 @@ struct Polygon
       |> reduce((d1, d2) -> mergewith(vcat, d1, d2), _)
     )
 
-    new(vertical_edges_asc_y_min, horizontal_edges_by_y, vertical_edges_by_x)
+    new(corners, vertical_edges_asc_y_min, horizontal_edges_by_y, vertical_edges_by_x)
   end
 end
 
@@ -69,6 +71,7 @@ function contains_point(polygon::Polygon, point::Vector{Int})::Bool
   x, y = point
   intersections = 0
 
+  # TODO: points on horizontal and vertical edges should be included as well
   for edge in polygon.vertical_edges_asc_y_min
     if y >= edge.y_min && y <= edge.y_max
       if edge.x == x
@@ -117,6 +120,16 @@ function is_rect_inside_polygon(polygon::Polygon, rect::Vector{Vector{Int}})::Bo
   all(corner -> contains_point(polygon, corner), corners) && !any(edge -> intersects_edge(polygon, edge), edges)
 end
 
+function color(polygon::Polygon, point::Vector{Int})::Union{Symbol,Nothing}
+  if point in polygon.corners
+    :red
+  elseif contains_point(polygon, point)
+    :green
+  else
+    nothing
+  end
+end
+
 function p2(input::Vector{Vector{Int}})::Int
   polygon = Polygon(input)
   (area(input[idx1], input[idx2])
@@ -148,11 +161,16 @@ input = read("inputs/d09.txt", String) |> parse_input
 @assert area([9, 5], [2, 3]) == 24
 
 test_polygon = Polygon(test_input)
+contains_point(test_polygon, [3, 3])
 @assert all(@pipe [[[7, 3], [11, 1]], [[9, 7], [9, 5]], [[9, 5], [2, 3]]] .|> is_rect_inside_polygon(test_polygon, _))
+@assert @pipe test_polygon.corners |> color.((test_polygon,), _) |> all(==(:red), _)
+@assert @pipe [[8, 1], [9, 1], [10, 1], [7, 2], [3, 3]] |> color.((test_polygon,), _) |> all(==(:green), _)
 
-# TODO: check the color red vs green criteria
 
 @assert p1(test_input) == 50
 @assert @show @time p1(input) == 4758121828
 
+@assert p2(test_input) == 24
+
 # 4758121828 is too high
+# 4730060646 is too high
