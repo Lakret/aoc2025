@@ -71,7 +71,13 @@ function contains_point(polygon::Polygon, point::Vector{Int})::Bool
   x, y = point
   intersections = 0
 
-  # TODO: points on horizontal and vertical edges should be included as well
+  # points on horizontal edges should be included
+  if @pipe get(polygon.horizontal_edges_by_y, y, []) |> any(edge -> edge.x_min <= x <= edge.x_max, _)
+    return true
+  end
+
+  # points on vertical edges should be included, all other included points will have 
+  # an odd number of intersections with vertical edges
   for edge in polygon.vertical_edges_asc_y_min
     if y >= edge.y_min && y <= edge.y_max
       if edge.x == x
@@ -161,7 +167,6 @@ input = read("inputs/d09.txt", String) |> parse_input
 @assert area([9, 5], [2, 3]) == 24
 
 test_polygon = Polygon(test_input)
-contains_point(test_polygon, [3, 3])
 @assert all(@pipe [[[7, 3], [11, 1]], [[9, 7], [9, 5]], [[9, 5], [2, 3]]] .|> is_rect_inside_polygon(test_polygon, _))
 @assert @pipe test_polygon.corners |> color.((test_polygon,), _) |> all(==(:red), _)
 @assert @pipe [[8, 1], [9, 1], [10, 1], [7, 2], [3, 3]] |> color.((test_polygon,), _) |> all(==(:green), _)
@@ -171,6 +176,6 @@ contains_point(test_polygon, [3, 3])
 @assert @show @time p1(input) == 4758121828
 
 @assert p2(test_input) == 24
-
+p2(input)
 # 4758121828 is too high
 # 4730060646 is too high
