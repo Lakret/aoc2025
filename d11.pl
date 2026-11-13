@@ -26,7 +26,7 @@ connection(Connection) -->
   { ConnectionCodes = [_ | _], atom_codes(Connection, ConnectionCodes) },
   !.
 
-:- dynamic device/2.
+:- dynamic([device/2], [incremental(true)]).
 
 init_db :-
   parse_input('inputs/d11.txt', Entries),
@@ -41,51 +41,40 @@ valid_path(Device) :-
   member(NextDevice, Connections),
   valid_path(NextDevice).
 
+%% p1(-Count).
+%  Solution to p1 by finding all valid_path solutions and counting them.
 p1(Count) :-
   init_db,
   findall('', valid_path, Paths),
   length(Paths, Count).
 
-valid_path2 :- valid_path2(svr, false, false, []).
+count_paths(Count) :- count_paths(svr, false, false, Count).
 
-valid_path2(out, true, true, _).
-valid_path2(dac, false, FFT_Visited, Visited) :-
-  device(dac, Connections),
-  NewVisited = [dac | Visited],
-  !,
-  member(NextDevice, Connections),
-  valid_path2(NextDevice, true, FFT_Visited, NewVisited).
-valid_path2(fft, DAC_Visited, false, Visited) :-
-  device(fft, Connections),
-  NewVisited = [fft | Visited],
-  !,
-  member(NextDevice, Connections),
-  valid_path2(NextDevice, DAC_Visited, true, NewVisited).
-valid_path2(Device, _, _, Visited) :-
-  member(Device, Visited),
-  !,
-  fail.
-valid_path2(Device, DAC_Visited, FFT_Visited, Visited) :-
-  NewVisited = [Device | Visited],
-  device(Device, Connections),
-  member(NextDevice, Connections),
-  valid_path2(NextDevice, DAC_Visited, FFT_Visited, NewVisited).
+:- table count_paths/4 as incremental.
 
-% device(svr, [aaa, bbb]).
-% device(aaa, [fft]).
-% device(fft, [ccc]).
-% device(bbb, [tty]).
-% device(tty, [ccc]).
-% device(ccc, [ddd, eee]).
-% device(ddd, [hub]).
-% device(hub, [fff]).
-% device(eee, [dac]).
-% device(dac, [fff]).
-% device(fff, [ggg, hhh]).
-% device(ggg, [out]).
-% device(hhh, [out]).
+% instead of counting each path one by one, use dynamic programming -
+% remember counts for each subtree and reuse them
+count_paths(out, true, true, 1) :- !.
+count_paths(out, _, _, 0) :- !.
+count_paths(Device, SeenDAC, SeenFFT, Count) :-
+  (Device == dac -> NextDAC = true; NextDAC = SeenDAC),
+  (Device == fft -> NextFFT = true; NextFFT = SeenFFT),
+  !,
+  findall(
+    NextCount,
+    (
+      device(Device, Connections),
+      member(NextDevice, Connections),
+      count_paths(NextDevice, NextDAC, NextFFT, NextCount)
+    ),
+    NextCounts
+  ),
+  sum_list(NextCounts, Count).
 
+%% p2(-Count).
+%  Solution to p2 by dynamic programming via tabling: count all paths in each valid subtree and sum them.
 p2(Count) :-
   init_db,
-  findall('', valid_path2, Paths),
-  length(Paths, Count).
+  count_paths(Count).
+
+% ?- call_time(p2(C), Time).
