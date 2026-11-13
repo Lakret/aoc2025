@@ -1,6 +1,8 @@
 :- use_module(library(pio)).
 :- use_module(library(dcg/basics)).
 
+% *** Input Parser ***
+
 % ?- parse_input('inputs/d11.txt', Entries).
 parse_input(File, Entries) :- phrase_from_file(lines(Entries), File).
 
@@ -26,6 +28,8 @@ connection(Connection) -->
   { ConnectionCodes \= [], atom_codes(Connection, ConnectionCodes) },
   !.
 
+% *** Part 1 ***
+
 :- dynamic([device/2], [incremental(true)]).
 
 init_db :-
@@ -47,6 +51,8 @@ p1(Count) :-
   init_db,
   findall('', valid_path, Paths),
   length(Paths, Count).
+
+% *** Part 2 ***
 
 count_paths(Count) :- count_paths(svr, false, false, Count).
 
