@@ -23,7 +23,7 @@ connections([]) --> [].
 
 connection(Connection) -->
   nonblanks(ConnectionCodes),
-  { ConnectionCodes = [_ | _], atom_codes(Connection, ConnectionCodes) },
+  { ConnectionCodes \= [], atom_codes(Connection, ConnectionCodes) },
   !.
 
 :- dynamic([device/2], [incremental(true)]).
